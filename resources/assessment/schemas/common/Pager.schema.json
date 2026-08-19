@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "Pager.schema.json",
+  "type": "object",
+  "description": "Pagination metadata returned with list responses.",
+  "properties": {
+    "current_page": {
+      "type": "integer",
+      "description": "The zero-based current page number."
+    },
+    "items_per_page": {
+      "type": "integer",
+      "description": "The number of items displayed per page (200)."
+    },
+    "total_items": {
+      "type": "integer",
+      "description": "The total number of items in the result set."
+    },
+    "total_pages": {
+      "type": "integer",
+      "description": "The total number of pages."
+    }
+  }
+}

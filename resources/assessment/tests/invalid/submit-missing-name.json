@@ -1,0 +1,95 @@
+{
+  "provider": {
+    "name": "City of Brussels",
+    "organisation_type": "local_public_sector_body",
+    "country": "BE"
+  },
+  "relevant_report": [
+    "https://example.com/last-year-report",
+    "https://example.com/middle-east"
+  ],
+  "binding_requirement": [
+    {
+      "expression": [
+        {
+          "name": "Legal Act 2024",
+          "description": "Reference to an EU legal expression",
+          "documented_in": "https://example.com/eli/act"
+        }
+      ],
+      "description": "Article 5",
+      "documented_in": "https://example.com/eli/act",
+      "documents": [
+        "https://example.com/law/123",
+        "https://example.com/regulation/eu-1655467-s"
+      ],
+      "affects": [
+        {
+          "name": "Digital Monitoring Unit",
+          "thematic_area": [
+            "general_public_services",
+            "environmental_protection"
+          ],
+          "country": [
+            "BE",
+            "NL"
+          ]
+        },
+        {
+          "name": "Training Centre",
+          "thematic_area": [
+            "education"
+          ],
+          "country": [
+            "BE"
+          ]
+        }
+      ],
+      "has_participation": [
+        {
+          "participant_type": [
+            "national_public_sector_body"
+          ],
+          "country": [
+            "BE",
+            "NL",
+            "LU"
+          ]
+        },
+        {
+          "participant_type": [
+            "private_businesses"
+          ],
+          "country": [
+            "IT"
+          ]
+        }
+      ],
+      "asset": [
+        {
+          "title": "Portal EU",
+          "description": "An EU portal interoperable solution",
+          "landing_page": "https://portal.example.eu"
+        },
+        "b21e876e-8ad0-4057-ad57-de45c51d374f",
+        "a0e76022-863e-4f8f-8eb0-8227cd080be4"
+      ]
+    }
+  ],
+  "results_in": {
+    "organisational": {
+      "interpretation": "positive",
+      "judgement": "Compliant with conditions"
+    },
+    "technical": {
+      "interpretation": "neutral",
+      "judgement": "Requires follow-up"
+    }
+  },
+  "remaining_barriers": "The city has not yet implemented the new regulations.",
+  "documents": [
+    "https://files.example.com/documents/req-1.pdf",
+    "https://files.example.com/documents/regulation.2025.pdf"
+  ],
+  "other_comment": "Still work to be done. Waiting for a new iteration."
+}

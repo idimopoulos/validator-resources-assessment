@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "PublicService.schema.json",
+  "type": "object",
+  "required": [
+    "name"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "The name of the public service.",
+      "minLength": 1,
+      "maxLength": 255
+    },
+    "thematic_area": {
+      "type": "array",
+      "uniqueItems": true,
+      "description": "The concerned function of trans-European digital public service(s).",
+      "items": {
+        "type": "string",
+        "enum": [
+          "general_public_services",
+          "defence",
+          "public_order_and_safety",
+          "economic_affairs",
+          "environmental_protection",
+          "housing_and_community_amenities",
+          "health",
+          "recreation_culture_and_religion",
+          "education",
+          "social_protection"
+        ]
+      }
+    },
+    "country": {
+      "type": "array",
+      "uniqueItems": true,
+      "description": "The concerned country(s) of trans-European digital public\nservice(s).",
+      "items": {
+        "$ref": "EuropeanUnionCountry.schema.json"
+      }
+    }
+  }
+}

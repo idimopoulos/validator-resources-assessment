@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "Asset.schema.json",
+  "type": "object",
+  "required": [
+    "title",
+    "description",
+    "landing_page"
+  ],
+  "description": "An asset as interoperability solution.",
+  "properties": {
+    "id": {
+      "schema": {
+        "$ref": "UUID.schema.json"
+      },
+      "readOnly": true,
+      "description": "The universally unique ID of the solution."
+    },
+    "uri": {
+      "type": "string",
+      "format": "uri",
+      "readOnly": true,
+      "description": "The canonical URI of the asset"
+    },
+    "title": {
+      "type": "string",
+      "description": "The title of the interoperability solution.",
+      "minLength": 1,
+      "maxLength": 255
+    },
+    "description": {
+      "type": "string",
+      "description": "The interoperability solution description.",
+      "minLength": 1
+    },
+    "landing_page": {
+      "type": "string",
+      "description": "The interoperability solution relevant website.",
+      "format": "uri"
+    },
+    "url": {
+      "type": "string",
+      "description": "The solution page on the Interoperable Europe Portal.",
+      "format": "uri"
+    }
+  }
+}

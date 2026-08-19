@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "PaginatedAssetList.schema.json",
+  "type": "object",
+  "description": "Paginated list of assets (interoperability solutions).",
+  "properties": {
+    "rows": {
+      "type": "array",
+      "uniqueItems": true,
+      "description": "The list of assets for the current page.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The asset UUID."
+          },
+          "uri": {
+            "type": "string",
+            "format": "uri",
+            "description": "The canonical URI of the asset."
+          },
+          "title": {
+            "type": "string",
+            "description": "The asset title."
+          },
+          "url": {
+            "type": "string",
+            "format": "uri",
+            "description": "The URL to the asset page on the portal."
+          }
+        }
+      }
+    },
+    "pager": {
+      "$ref": "Pager.schema.json"
+    }
+  }
+}

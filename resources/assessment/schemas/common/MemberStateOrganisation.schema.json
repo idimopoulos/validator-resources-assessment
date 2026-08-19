@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "MemberStateOrganisation.schema.json",
+  "type": "object",
+  "description": "An organisation acting on a European Union members state, on a national,\nregional or local level.",
+  "required": [
+    "name",
+    "organisation_type",
+    "country"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "schema": {
+        "$ref": "UUID.schema.json"
+      },
+      "readOnly": true,
+      "description": "The ID of the members state organisation."
+    },
+    "uri": {
+      "type": "string",
+      "format": "uri",
+      "readOnly": true,
+      "description": "The RDF resource URI of the members state organisation."
+    },
+    "name": {
+      "type": "string",
+      "description": "The members state organisation name.",
+      "minLength": 1,
+      "maxLength": 255
+    },
+    "organisation_type": {
+      "type": "string",
+      "description": "The member state organisation type.",
+      "enum": [
+        "local_public_sector_body",
+        "national_public_sector_body",
+        "regional_public_sector_body"
+      ]
+    },
+    "country": {
+      "$ref": "EuropeanUnionCountry.schema.json",
+      "description": "The member state organisation country."
+    }
+  }
+}

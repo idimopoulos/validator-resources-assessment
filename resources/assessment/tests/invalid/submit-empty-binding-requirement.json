@@ -1,0 +1,29 @@
+{
+  "name": "Legislation waste management",
+  "provider": {
+    "name": "City of Brussels",
+    "organisation_type": "local_public_sector_body",
+    "country": "BE"
+  },
+  "relevant_report": [
+    "https://example.com/last-year-report",
+    "https://example.com/middle-east"
+  ],
+  "binding_requirement": [],
+  "results_in": {
+    "organisational": {
+      "interpretation": "positive",
+      "judgement": "Compliant with conditions"
+    },
+    "technical": {
+      "interpretation": "neutral",
+      "judgement": "Requires follow-up"
+    }
+  },
+  "remaining_barriers": "The city has not yet implemented the new regulations.",
+  "documents": [
+    "https://files.example.com/documents/req-1.pdf",
+    "https://files.example.com/documents/regulation.2025.pdf"
+  ],
+  "other_comment": "Still work to be done. Waiting for a new iteration."
+}

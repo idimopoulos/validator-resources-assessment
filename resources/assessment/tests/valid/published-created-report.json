@@ -1,0 +1,114 @@
+{
+  "id": "76269914-0d50-46a6-8cd5-19ec67474e99",
+  "uri": "https://joinup.ddev.local/assessment/report/76269914-0d50-46a6-8cd5-19ec67474e99",
+  "language": "en",
+  "name": "Legislation waste management",
+  "provider": {
+    "id": "a74fcfc7-290d-4b37-b3a6-13e506a4f010",
+    "name": "City of Brussels",
+    "organisation_type": "local_public_sector_body",
+    "country": "BE"
+  },
+  "relevant_report": [
+    "https://example.com/last-year-report",
+    "https://example.com/middle-east"
+  ],
+  "binding_requirement": [
+    {
+      "expression": [
+        {
+          "name": "Legal Act 2024",
+          "description": "Reference to an EU legal expression",
+          "documented_in": "https://example.com/eli/act"
+        }
+      ],
+      "description": "Article 5",
+      "documented_in": "https://example.com/eli/act",
+      "documents": [
+        "https://my.local.domain/documents/fetched-renamed-file-ab.pdf",
+        "https://my.local.domain/documents/fetched-renamed-file-cd.pdf"
+      ],
+      "affects": [
+        {
+          "name": "Digital Monitoring Unit",
+          "thematic_area": [
+            "general_public_services",
+            "environmental_protection"
+          ],
+          "country": [
+            "BE",
+            "NL"
+          ]
+        },
+        {
+          "name": "Training Centre",
+          "thematic_area": [
+            "education"
+          ],
+          "country": [
+            "BE"
+          ]
+        }
+      ],
+      "has_participation": [
+        {
+          "participant_type": [
+            "national_public_sector_body"
+          ],
+          "country": [
+            "BE",
+            "NL",
+            "LU"
+          ]
+        },
+        {
+          "participant_type": [
+            "private_businesses"
+          ],
+          "country": [
+            "IT"
+          ]
+        }
+      ],
+      "asset": [
+        {
+          "id": "42097b4d-eb1a-45e8-a9b9-493541c9edab",
+          "title": "Portal EU",
+          "description": "An EU portal interoperable solution",
+          "landing_page": "https://portal.example.eu",
+          "url": "https://joinup.ddev.local/it/node/732257/solution/portal-eu"
+        },
+        {
+          "id": "b21e876e-8ad0-4057-ad57-de45c51d374f",
+          "title": "Some 2nd referenced asset",
+          "description": "...",
+          "landing_page": "https://portal.example.eu/1111",
+          "url": "https://joinup.ddev.local/it/node/1111"
+        },
+        {
+          "id": "42097b4d-eb1a-45e8-a9b9-493541c9edab",
+          "title": "Some 3rd referenced asset",
+          "description": "...",
+          "landing_page": "https://portal.example.eu/2222",
+          "url": "https://joinup.ddev.local/it/node/2222"
+        }
+      ]
+    }
+  ],
+  "results_in": {
+    "organisational": {
+      "interpretation": "positive",
+      "judgement": "Compliant with conditions"
+    },
+    "technical": {
+      "interpretation": "neutral",
+      "judgement": "Requires follow-up"
+    }
+  },
+  "remaining_barriers": "The city has not yet implemented the new regulations.",
+  "documents": [
+    "https://my.local.domain/documents/fetched-renamed-file-1.pdf",
+    "https://my.local.domain/documents/regulation.2025.pdf"
+  ],
+  "other_comment": "Still work to be done. Waiting for a new iteration."
+}

@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "PaginatedOrganisationList.schema.json",
+  "type": "object",
+  "description": "Paginated list of public organisations.",
+  "properties": {
+    "rows": {
+      "type": "array",
+      "uniqueItems": true,
+      "description": "The list of organisations for the current page.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The organisation UUID."
+          },
+          "uri": {
+            "type": "string",
+            "format": "uri",
+            "description": "The canonical URI of the organisation."
+          },
+          "name": {
+            "type": "string",
+            "description": "The organisation name."
+          },
+          "organisation_type": {
+            "type": "string",
+            "description": "The organisation type identifier."
+          },
+          "country": {
+            "type": "string",
+            "nullable": true,
+            "description": "The country code (ISO-3166 alpha-2)."
+          }
+        }
+      }
+    },
+    "pager": {
+      "$ref": "Pager.schema.json"
+    }
+  }
+}

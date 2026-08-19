@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "Statement.schema.json",
+  "type": "object",
+  "required": [
+    "interpretation"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "interpretation": {
+      "type": "string",
+      "description": "The interpretation of the statement.",
+      "enum": [
+        "negative",
+        "neutral",
+        "positive"
+      ]
+    },
+    "judgement": {
+      "type": "string",
+      "description": "The personal opinion on the report."
+    }
+  }
+}

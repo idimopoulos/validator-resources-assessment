@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "PaginatedReportList.schema.json",
+  "type": "object",
+  "description": "Paginated list of assessment reports.",
+  "properties": {
+    "rows": {
+      "type": "array",
+      "uniqueItems": true,
+      "description": "The list of reports for the current page.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The report UUID."
+          },
+          "uri": {
+            "type": "string",
+            "format": "uri",
+            "description": "The canonical URI of the report."
+          },
+          "name": {
+            "type": "string",
+            "description": "The report name."
+          },
+          "country": {
+            "type": "string",
+            "nullable": true,
+            "description": "The provider's country code (ISO-3166 alpha-2)."
+          }
+        }
+      }
+    },
+    "pager": {
+      "$ref": "Pager.schema.json"
+    }
+  }
+}

@@ -1,0 +1,83 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "BindingRequirement.schema.json",
+  "type": "object",
+  "required": [
+    "expression",
+    "description",
+    "affects"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "expression": {
+      "type": "array",
+      "uniqueItems": true,
+      "minItems": 1,
+      "description": "One ore multiple objects can be submitted, each following the\n`Expression` schema.",
+      "items": {
+        "$ref": "Expression.schema.json"
+      }
+    },
+    "description": {
+      "type": "string",
+      "description": "The binding requirement short description.",
+      "minLength": 1
+    },
+    "documented_in": {
+      "type": "string",
+      "format": "uri",
+      "description": "The binding requirement url."
+    },
+    "documents": {
+      "type": "array",
+      "uniqueItems": true,
+      "description": "List of URLs of documents supporting this binding requirement.",
+      "items": {
+        "type": "string",
+        "format": "uri"
+      }
+    },
+    "affects": {
+      "type": "array",
+      "uniqueItems": true,
+      "description": "One ore multiple objects can be submitted, each following the\n`PublicService` schema.",
+      "minItems": 1,
+      "items": {
+        "$ref": "PublicService.schema.json"
+      }
+    },
+    "has_participation": {
+      "type": "array",
+      "uniqueItems": true,
+      "description": "One ore multiple objects can be submitted, each following the\n`Participation` schema.",
+      "items": {
+        "$ref": "Participation.schema.json"
+      }
+    },
+    "asset": {
+      "type": "array",
+      "uniqueItems": true,
+      "description": "One ore multiple items can be submitted. Each item is:\n- EITHER an object following the `Asset` schema. In this case a new\n  asset will be created along with the assessment report,\n- OR, an existing interoperability solution ID. To find out which\n  are all existing interoperability solutions (assets), use the\n  `/asset` GET resource, documented in this page.",
+      "items": {
+        "oneOf": [
+          {
+            "$ref": "Asset.schema.json"
+          },
+          {
+            "$ref": "UUID.schema.json"
+          }
+        ]
+      },
+      "example": {
+        "asset": [
+          "b40f14cf-7383-40d6-aa07-16be9b3ff930",
+          {
+            "title": "Agriculture Digital System",
+            "description": "The New Agriculture Revolution.",
+            "url": "http://example.com/digital-revolution"
+          }
+        ]
+      }
+    }
+  }
+}

@@ -1,0 +1,97 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "Assessment.schema.json",
+  "type": "object",
+  "description": "European Union Interoperability Act assessment report.",
+  "required": [
+    "name",
+    "binding_requirement",
+    "provider"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "schema": {
+        "$ref": "common/UUID.schema.json"
+      },
+      "readOnly": true,
+      "description": "The universally unique ID of the assessment report"
+    },
+    "uri": {
+      "type": "string",
+      "format": "uri",
+      "readOnly": true,
+      "description": "The canonical URI of the assessment report"
+    },
+    "name": {
+      "type": "string",
+      "description": "A short name assigned for easy identification.",
+      "minLength": 1,
+      "maxLength": 255
+    },
+    "provider": {
+      "description": "A public organisation. For an existing organisationm pass its ID. To\ncreate a new organisation pass a `MemberStateOrganisation` object.\nIt's not possible to to create a new European Union organisation,\nyou should always pass an ID to refer one. To find out which are all\nexisting organisations, use the `/organisation` GET resource,\ndocumented in this page.",
+      "oneOf": [
+        {
+          "$ref": "common/MemberStateOrganisation.schema.json"
+        },
+        {
+          "$ref": "common/UUID.schema.json"
+        }
+      ]
+    },
+    "relevant_report": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "format": "uri"
+      },
+      "description": "Relevant assessment reports"
+    },
+    "binding_requirement": {
+      "description": "One ore multiple objects can be submitted, each following the\nBindingRequirement schema.",
+      "type": "array",
+      "uniqueItems": true,
+      "minItems": 1,
+      "items": {
+        "$ref": "common/BindingRequirement.schema.json"
+      }
+    },
+    "results_in": {
+      "type": "object",
+      "description": "Identified effects on cross-border interoperability from different\nperspectives: legal, organisational, semantic, and technical.",
+      "properties": {
+        "legal": {
+          "$ref": "common/Statement.schema.json"
+        },
+        "organisational": {
+          "$ref": "common/Statement.schema.json"
+        },
+        "semantic": {
+          "$ref": "common/Statement.schema.json"
+        },
+        "technical": {
+          "$ref": "common/Statement.schema.json"
+        }
+      }
+    },
+    "remaining_barriers": {
+      "type": "string",
+      "description": "Describe possible remaining barriers to interoperability."
+    },
+    "documents": {
+      "type": "array",
+      "uniqueItems": true,
+      "description": "List of URLs of documents supporting this assessment report.",
+      "items": {
+        "type": "string",
+        "format": "uri"
+      }
+    },
+    "other_comment": {
+      "type": "string",
+      "description": "Any additional comments or notes about the assessment."
+    }
+  }
+}

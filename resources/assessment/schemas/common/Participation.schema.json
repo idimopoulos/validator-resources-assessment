@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "Participation.schema.json",
+  "type": "object",
+  "required": [
+    "participant_type"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "participant_type": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "description": "The type of the affected stakeholder.",
+        "enum": [
+          "european_union_agency",
+          "european_union_body",
+          "european_union_institution",
+          "local_public_sector_body",
+          "national_public_sector_body",
+          "private_businesses",
+          "regional_public_sector_body"
+        ]
+      },
+      "description": "The participation type."
+    },
+    "country": {
+      "description": "Stakeholder's countries. Each as ISO-3166 2-letter country code or\n\"EU\" for EU-wide entities.",
+      "oneOf": [
+        {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "enum": [
+              "EU"
+            ]
+          },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "EuropeanUnionCountry.schema.json"
+          }
+        }
+      ]
+    }
+  }
+}
