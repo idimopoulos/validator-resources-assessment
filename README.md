@@ -95,8 +95,10 @@ one rule.
 
 `invalid/report-as-returned-by-the-api.json` is the exception, and is not a mutation: it is
 the spec's own `201` response example, unaltered. It sits in `invalid/` because it does not
-validate — that is the `language` defect below, encoded as a test. When the spec is fixed
-this test will start failing, which is the point: move it to `valid/` at that moment.
+validate: responses carry a `language` property that the `Assessment` schema does not
+declare while setting `additionalProperties: false`. Keeping it here encodes that defect as
+a test — when the specification is fixed this test will start failing, which is the point.
+Move it to `valid/` at that moment.
 
 ## Running the validator locally
 
@@ -145,80 +147,3 @@ and references use those URIs. They are **identifiers, not locations** — the v
 them to the local files and never fetches anything over the network. Change the base with
 `--base-uri` if a different namespace is agreed; it is a published identifier, so it is
 worth agreeing before the validator goes live rather than after.
-
-## CI
-
-`.github/workflows/ci.yml` runs both of the above on every push and pull request.
-
-This is a **self-contained** check: it verifies the schemas against the vendored copy of
-the spec. It catches hand-edited schemas and a spec refresh without a regeneration. It
-cannot see Joinup changing the upstream spec — that drift stays invisible until somebody
-refreshes `spec/`.
-
-Closing that gap needs CI that reads the spec from GitLab, either pushed from Joinup's own
-pipeline when the spec changes, or pulled here on a schedule to open a pull request. Both
-need a cross-organisation credential, which is why neither is set up yet. Given that ITB's
-webhook redeploys the validator on push, the pull-and-review shape is the safer of the two:
-a human sees each schema change before Member States do.
-
-## Validation types
-
-One type, `report`, validating against the generated `Assessment` schema. Nothing is
-customised: no schema combination, no overlays, no message or report tuning. This is
-deliberately the plainest configuration the Test Bed accepts, so that what you see is the
-validator's own behaviour rather than ours.
-
-`Assessment` describes **both** directions of the exchange — the body posted to
-`POST /assessment` and the body returned by it — so `report` currently accepts either. Two
-consequences worth knowing before reading a report:
-
-- A payload may legally carry `id` and `uri`, even though the server assigns them. They are
-  marked `readOnly` in the spec, but `readOnly` is an annotation in JSON Schema and no
-  validator enforces it.
-- A response payload fails, because responses carry `language` and the schema does not
-  declare it while setting `additionalProperties: false`. See the divergences below.
-
-An earlier revision added a submission-only overlay that made `id` and `uri` illegal on
-input, combined with `combinationApproach = allOf`. It worked, but it changed the reported
-errors into ones the stock validator would never produce, which is the opposite of what a
-first evaluation needs. It is in the history at `4827e93` if it is wanted back.
-
-## Known divergences from the API
-
-Recorded here because a validator that differs from the endpoint it fronts is a support
-burden, not a feature.
-
-1. **`language` was removed from the input side only.** ISAICP-11003 (`32a49ff`, 10 March
-   2026) deleted the property from the `Assessment` schema and from the request example,
-   deliberately: reports are English-only for now, `createReport()` hardcodes the default
-   via `$data['language'] ?? 'en'`, and a sibling commit added test coverage for the
-   property being *prohibited* on submission. That part is intentional, not a bug.
-
-   What was missed is the response side. `reportToArray()` still emits
-   `'language' => $report->language()->getId()` unconditionally, and the `201` example was
-   edited (`"it"` → `"en"`) rather than removed. So the specification's own response
-   example does not satisfy the specification's own schema, and neither does any real
-   response. Confirmed against the Test Bed validator, which reports
-   `Property 'language' not defined in the schema and additional properties are not
-   allowed.`
-
-   Resolving it is a choice between re-declaring `language` as `readOnly`, or dropping it
-   from `reportToArray()` and the example. Until then, this validator rejects genuine API
-   output.
-
-2. **`id` is unconstrained.** In `Assessment`, `EuropeanUnionOrganisation`,
-   `MemberStateOrganisation` and `Asset` the property is written as `id:` → `schema:` →
-   `$ref`. Inside a `properties` map the value *is* the schema; there is no `schema:`
-   keyword, so the reference to `UUID` never applies and any value passes. Faithfully
-   reproduced here — the generator derives, it does not correct.
-
-3. **Dialect gap.** The spec is 2020-12, but Joinup validates with
-   `justinrainbow/json-schema` 6.10.0, which implements draft-04/06/07. The Test Bed runs
-   `networknt/json-schema-validator`, which does support 2020-12. On any 2020-12-only
-   keyword this validator will be stricter than the API.
-
-## Publishing
-
-Test Bed hosts the validator; this repository holds only its configuration. Once the
-repository is pushed, ITB configure a webhook so pushes redeploy the validator
-automatically — which is why `--check` in CI is not optional.

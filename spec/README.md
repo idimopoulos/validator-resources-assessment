@@ -22,7 +22,9 @@ hand-edited schema, and it catches someone updating the copy without regeneratin
 
 It does **not** catch Joinup changing the upstream spec — that drift is invisible here
 until somebody refreshes this file. Closing that gap needs CI that reads the spec from
-GitLab directly; see the CI section of the root README.
+GitLab directly, either pushed from Joinup's own pipeline when the spec changes or pulled
+here on a schedule to open a pull request. Both need a cross-organisation credential, which
+is why neither is set up.
 
 ## Refreshing
 
