@@ -1,0 +1,27 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - run: pip install -r requirements.txt
+
+      # The schemas are derived from the OpenAPI spec, never hand-edited. This fails if
+      # anyone edits a generated file, or updates the vendored spec without regenerating.
+      - name: Schemas match the specification
+        run: ./bin/generate-schemas.py --spec spec/assessments.openapi.yaml --check
+
+      # Exercises the schemas through config.properties, so it tests what the Test Bed
+      # will actually load rather than a restatement of it.
+      - name: Sample payloads validate as expected
+        run: ./bin/run-tests.py
