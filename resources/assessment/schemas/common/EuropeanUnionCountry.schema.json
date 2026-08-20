@@ -1,6 +1,5 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "EuropeanUnionCountry.schema.json",
   "type": "string",
   "nullable": true,
   "description": "ISO-3166 alpha-2 country code",

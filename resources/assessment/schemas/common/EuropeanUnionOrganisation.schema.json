@@ -1,6 +1,5 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "EuropeanUnionOrganisation.schema.json",
   "type": "object",
   "description": "An European Union organisation such as an institution, agency or body.",
   "required": [

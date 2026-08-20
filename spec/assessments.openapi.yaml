@@ -1,0 +1,982 @@
+openapi: 3.1.1
+info:
+  title: Assessment API
+  version: 1.0.0
+  description: |
+    API for submitting Assessment reports and related entities.
+servers:
+  - url: /oauth
+    description: OAuth2 endpoint
+  - url: /api/assessments/v1
+    description: Assessments API endpoint
+security:
+  - oauth2: [ ]
+paths:
+  /token:
+    $ref: "../../joinup_api/openapi/oauth2.openapi.yaml#/paths/~1token"
+  /assessment:
+    servers:
+      - url: /api/assessments/v1
+        description: Assessments API endpoint
+    post:
+      summary: Create an assessment report
+      description: |-
+        Submit a single Assessment JSON object. Some referred objects (such as
+        provider or asset) can be either reused by passing their ID, or created
+        by passing fully-structured objects, as is defined by their schema.
+      operationId: createAssessment
+      tags:
+        - Assessments
+      security:
+        - oauth2: [ ]
+      parameters:
+        - in: header
+          name: Authorization
+          description: |-
+            Bearer access token. Format: 'Bearer <access_token>'. See the
+            "Authentication" on how to obtain an access token.
+          required: true
+          schema:
+            type: string
+            example: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+      requestBody:
+        required: true
+        description: POST request body as JSON
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Assessment'
+            examples:
+              createOrReferSubObjects:
+                summary: Post report (see description below)
+                description: |-
+                  If the `provider` and/or the `asset` doesn't exist yet, the
+                  POST request will have to provide the minimal data, according
+                  to their schema. The objects will be created as past of the
+                  request and their IDs will be returned as response.
+
+                  In this example the binding requirement's first asset doesn't
+                  exist, and is created along with the report. But the 2nd the
+                  3rd are existing assets, thus are only referred by their ID.
+                  To find out which are all existing assets, use the `/asset`
+                  GET resource, documented below.
+
+                  The `provider` is also created along with the report. To link
+                  an existing public organisation, provide its ID: `"provider":
+                  "ec2a8c99-40fb-4174-b5e1-02de37b2ab0f"`. To
+                  find out which are all existing organisations, use the
+                  `/organisation` GET resource,  documented below.
+                value:
+                  name: Legislation waste management
+                  provider:
+                    name: City of Brussels
+                    organisation_type: local_public_sector_body
+                    country: BE
+                  relevant_report:
+                    - https://example.com/last-year-report
+                    - https://example.com/middle-east
+                  binding_requirement:
+                    -
+                      expression:
+                        - name: Legal Act 2024
+                          description: Reference to an EU legal expression
+                          documented_in: https://example.com/eli/act
+                      description: Article 5
+                      documented_in: "https://example.com/eli/act"
+                      documents:
+                        - https://example.com/law/123
+                        - https://example.com/regulation/eu-1655467-s
+                      affects:
+                        - name: Digital Monitoring Unit
+                          thematic_area:
+                            - general_public_services
+                            - environmental_protection
+                          country:
+                            - BE
+                            - NL
+                        - name: Training Centre
+                          thematic_area:
+                            - education
+                          country:
+                            - BE
+                      has_participation:
+                        - participant_type:
+                            - national_public_sector_body
+                          country:
+                            - BE
+                            - NL
+                            - LU
+                        - participant_type:
+                            - private_businesses
+                          country:
+                            - IT
+                      asset:
+                        -
+                          title: Portal EU
+                          description: An EU portal interoperable solution
+                          landing_page: "https://portal.example.eu"
+                        - b21e876e-8ad0-4057-ad57-de45c51d374f
+                        - a0e76022-863e-4f8f-8eb0-8227cd080be4
+                  results_in:
+                    organisational:
+                      interpretation: positive
+                      judgement: Compliant with conditions
+                    technical:
+                      interpretation: neutral
+                      judgement: Requires follow-up
+                  remaining_barriers: The city has not yet implemented the new regulations.
+                  documents:
+                    - https://files.example.com/documents/req-1.pdf
+                    - https://files.example.com/documents/regulation.2025.pdf
+                  other_comment: Still work to be done. Waiting for a new iteration.
+      responses:
+        '201':
+          description: |-
+            The created assessment report. The response will contain exactly the
+            same structure as the submitted JSON plus the IDs of the created
+            objects.
+          content:
+            application/json:
+              examples:
+                createOrReferSubObjects:
+                  summary: Sample response from the example POST
+                  description: |-
+                    The response contains exactly the same structure as the
+                    submitted JSON plus the IDs of the created objects. In this
+                    example both the `provider` and the first `asset` of the
+                    binding requirement are created along with the report, thus
+                    their IDs are included in the response.
+                  value:
+                    id: "76269914-0d50-46a6-8cd5-19ec67474e99"
+                    uri: "https://joinup.ddev.local/assessment/report/76269914-0d50-46a6-8cd5-19ec67474e99"
+                    language: "en"
+                    name: "Legislation waste management"
+                    provider:
+                      id: "a74fcfc7-290d-4b37-b3a6-13e506a4f010"
+                      name: "City of Brussels"
+                      organisation_type: "local_public_sector_body"
+                      country: "BE"
+                    relevant_report:
+                      - "https://example.com/last-year-report"
+                      - "https://example.com/middle-east"
+                    binding_requirement:
+                      - expression:
+                          - name: "Legal Act 2024"
+                            description: "Reference to an EU legal expression"
+                            documented_in: "https://example.com/eli/act"
+                        description: "Article 5"
+                        documented_in: "https://example.com/eli/act"
+                        documents: [
+                          "https://my.local.domain/documents/fetched-renamed-file-ab.pdf",
+                          "https://my.local.domain/documents/fetched-renamed-file-cd.pdf"
+                        ]
+                        affects:
+                          - name: "Digital Monitoring Unit"
+                            thematic_area:
+                              - "general_public_services"
+                              - "environmental_protection"
+                            country:
+                              - "BE"
+                              - "NL"
+                          - name: "Training Centre"
+                            thematic_area:
+                              - "education"
+                            country:
+                              - "BE"
+                        has_participation:
+                          - participant_type:
+                              - "national_public_sector_body"
+                            country:
+                              - "BE"
+                              - "NL"
+                              - "LU"
+                          - participant_type:
+                              - "private_businesses"
+                            country:
+                              - "IT"
+                        asset:
+                          - id: "42097b4d-eb1a-45e8-a9b9-493541c9edab"
+                            title: "Portal EU"
+                            description: "An EU portal interoperable solution"
+                            landing_page: "https://portal.example.eu"
+                            url: "https://joinup.ddev.local/it/node/732257/solution/portal-eu"
+                          - id: "b21e876e-8ad0-4057-ad57-de45c51d374f"
+                            title: "Some 2nd referenced asset"
+                            description: "..."
+                            landing_page: "https://portal.example.eu/1111"
+                            url: "https://joinup.ddev.local/it/node/1111"
+                          - id: "42097b4d-eb1a-45e8-a9b9-493541c9edab"
+                            title: "Some 3rd referenced asset"
+                            description: "..."
+                            landing_page: "https://portal.example.eu/2222"
+                            url: "https://joinup.ddev.local/it/node/2222"
+                    results_in:
+                      organisational:
+                        interpretation: "positive"
+                        judgement: "Compliant with conditions"
+                      technical:
+                        interpretation: "neutral"
+                        judgement: "Requires follow-up"
+                    remaining_barriers: "The city has not yet implemented the new regulations."
+                    documents: [
+                      "https://my.local.domain/documents/fetched-renamed-file-1.pdf",
+                      "https://my.local.domain/documents/regulation.2025.pdf"
+                    ]
+                    other_comment: "Still work to be done. Waiting for a new iteration."
+
+              schema:
+                $ref: '#/components/schemas/Assessment'
+        '400':
+          description: Invalid request.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+    get:
+      summary: Get all Assessments of type reports
+      description: |-
+        Returns all assessment reports dependently on country code of referenced
+        public institution.
+      operationId: getReport
+      tags:
+        - Assessments
+      security: [ ]
+      parameters:
+        - in: query
+          name: country
+          required: false
+          description: |-
+            The two-letter ISO-3166 country code to filter reports by their
+            provider's country. Alternatively, use "EU" to fetch reports from EU
+            institutions, bodies, agencies.
+          schema:
+            $ref: '#/components/schemas/EuropeanUnionCountry'
+          example: BE, EU
+        - in: query
+          name: page
+          description: |-
+            Page number for pagination (0-indexed). Each page contains 200
+            items. Default is 0 (first page).
+          required: false
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+          example: 0
+      responses:
+        '200':
+          description: The fetched reports.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedReportList'
+              examples:
+                fetched:
+                  value:
+                    rows:
+                      - id: "43a50ef2-7d90-4562-ab81-59af10f2e082"
+                        uri: "https://interoperable-europe.ec.europa.eu/assessment/report/43a50ef2-7d90-4562-ab81-59af10f2e082"
+                        name: "Report 1"
+                        country: "PT"
+                      - id: "7b9e2cf3-8e91-4673-bc92-6a9f4e5d6c7c"
+                        uri: "https://interoperable-europe.ec.europa.eu/assessment/report/7b9e2cf3-8e91-4673-bc92-6a9f4e5d6c7c"
+                        name: "Report 2"
+                        country: null
+                    pager:
+                      current_page: 0
+                      items_per_page: 200
+                      total_items: 2
+                      total_pages: 1
+  /assessment/{id}:
+    servers:
+      - url: /api/assessments/v1
+        description: Assessments API endpoint
+    get:
+      summary: Get an Assessment by ID
+      description: Returns an assessment report object
+      operationId: getAssessment
+      tags:
+        - Assessments
+      security: [ ]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: The assessment report ID
+          schema:
+            $ref: '#/components/schemas/UUID'
+      responses:
+        '200':
+          description: The fetched assessment report
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Assessment'
+        '404':
+          description: Assessment not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+  /asset:
+    servers:
+      - url: /api/assessments/v1
+        description: Assessments API endpoint
+    get:
+      summary: Get all assets
+      description: |-
+        Returns all assets (also known as interoperability solutions). Results
+        are paginated with 200 items per page. Use the `page` parameter to
+        navigate through pages (0-indexed).
+      operationId: getAssets
+      tags:
+        - Resources
+      security: [ ]
+      parameters:
+        - in: query
+          name: page
+          description: |-
+            Page number for pagination (0-indexed). Each page contains 200
+            items. Default is 0 (first page).
+          required: false
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+          example: 0
+      responses:
+        '200':
+          description: Assets fetched
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedAssetList'
+              examples:
+                fetched:
+                  value:
+                    rows:
+                      - id: "43a50ef2-7d90-4562-ab81-59af10f2e081"
+                        uri: "http://data.europa.eu/w21/43a50ef2-7d90-4562-ab81-59af10f2e081"
+                        title: "Waste Management"
+                        url: "https://interoperable-europe.ec.europa.eu/collection/environment/solution/waste-managemet"
+                      - id: "7b9e2cf3-8e91-4673-bc92-6a9f4e5d6c7b"
+                        uri: "http://data.europa.eu/w21/7b9e2cf3-8e91-4673-bc92-6a9f4e5d6c7b"
+                        title: "Citizen's Forum"
+                        url: "https://interoperable-europe.ec.europa.eu/collection/participation/solution/forum"
+                    pager:
+                      current_page: 0
+                      items_per_page: 200
+                      total_items: 2
+                      total_pages: 1
+  /organisation:
+    servers:
+      - url: /api/assessments/v1
+        description: Assessments API endpoint
+    get:
+      summary: Get all public organisations
+      description: Returns all Public Organisations.
+      operationId: getPublicOrganisation
+      tags:
+        - Resources
+      security: [ ]
+      parameters:
+        - in: query
+          name: page
+          description: |-
+            Page number for pagination (0-indexed). Each page contains 200
+            items. Default is 0 (first page).
+          required: false
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+          example: 0
+      responses:
+        '200':
+          description: The fetched public organisations with pagination info.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedOrganisationList'
+              examples:
+                fetched:
+                  value:
+                    rows:
+                      - id: "43a50ef2-7d90-4562-ab81-59af10f2e081"
+                        uri: "https://interoperable-europe.ec.europa.eu/assessment/public-organisation/43a50ef2-7d90-4562-ab81-59af10f2e081"
+                        name: "Public Organisation 1"
+                        organisation_type: "local_public_sector_body"
+                        country: "BG"
+                      - id: "7b9e2cf3-8e91-4673-bc92-6a9f4e5d6c7b"
+                        uri: "https://interoperable-europe.ec.europa.eu/assessment/public-organisation/7b9e2cf3-8e91-4673-bc92-6a9f4e5d6c7b"
+                        name: "Public Organisation 2"
+                        organisation_type: "national_public_sector_body"
+                        country: null
+                    pager:
+                      current_page: 0
+                      items_per_page: 200
+                      total_items: 2
+                      total_pages: 1
+components:
+
+  securitySchemes:
+
+    oauth2:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: /oauth/token
+          scopes: { }
+
+  schemas:
+
+    # Entities and their reference-or-object wrappers
+
+    Assessment:
+      type: object
+      description: European Union Interoperability Act assessment report.
+      required:
+        - name
+        - binding_requirement
+        - provider
+      additionalProperties: false
+      properties:
+        id:
+          schema:
+            $ref: '#/components/schemas/UUID'
+          readOnly: true
+          description: The universally unique ID of the assessment report
+        uri:
+          type: string
+          format: uri
+          readOnly: true
+          description: The canonical URI of the assessment report
+        name:
+          type: string
+          description: A short name assigned for easy identification.
+          minLength: 1
+          maxLength: 255
+        provider:
+          description: |-
+            A public organisation. For an existing organisationm pass its ID. To
+            create a new organisation pass a `MemberStateOrganisation` object.
+            It's not possible to to create a new European Union organisation,
+            you should always pass an ID to refer one. To find out which are all
+            existing organisations, use the `/organisation` GET resource,
+            documented in this page.
+          oneOf:
+            - $ref: '#/components/schemas/MemberStateOrganisation'
+            - $ref: '#/components/schemas/UUID'
+        relevant_report:
+          type: array
+          uniqueItems: true
+          items:
+            type: string
+            format: uri
+          description: Relevant assessment reports
+        binding_requirement:
+          description: |-
+            One ore multiple objects can be submitted, each following the
+            BindingRequirement schema.
+          type: array
+          uniqueItems: true
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/BindingRequirement'
+        results_in:
+          type: object
+          description: |-
+            Identified effects on cross-border interoperability from different
+            perspectives: legal, organisational, semantic, and technical.
+          properties:
+            legal:
+              $ref: '#/components/schemas/Statement'
+            organisational:
+              $ref: '#/components/schemas/Statement'
+            semantic:
+              $ref: '#/components/schemas/Statement'
+            technical:
+              $ref: '#/components/schemas/Statement'
+        remaining_barriers:
+          type: string
+          description: Describe possible remaining barriers to interoperability.
+        documents:
+          type: array
+          uniqueItems: true
+          description: |-
+            List of URLs of documents supporting this assessment report.
+          items:
+            type: string
+            format: uri
+        other_comment:
+          type: string
+          description: Any additional comments or notes about the assessment.
+
+    EuropeanUnionOrganisation:
+      type: object
+      description: |-
+        An European Union organisation such as an institution, agency or body.
+      required:
+        - name
+        - organisation_type
+      additionalProperties: false
+      properties:
+        id:
+          schema:
+            $ref: '#/components/schemas/UUID'
+          readOnly: true
+          description: The ID of the European Union organisation.
+        uri:
+          type: string
+          format: uri
+          readOnly: true
+          description: The RDF resource URI of the European Union organisation.
+        name:
+          type: string
+          description: The European Union organisation name.
+          minLength: 1
+          maxLength: 255
+        organisation_type:
+          type: string
+          description: The European Union organisation type.
+          enum:
+            - european_union_agency
+            - european_union_body
+            - european_union_institution
+
+    MemberStateOrganisation:
+      type: object
+      description: |-
+        An organisation acting on a European Union members state, on a national,
+        regional or local level.
+      required:
+        - name
+        - organisation_type
+        - country
+      additionalProperties: false
+      properties:
+        id:
+          schema:
+            $ref: '#/components/schemas/UUID'
+          readOnly: true
+          description: The ID of the members state organisation.
+        uri:
+          type: string
+          format: uri
+          readOnly: true
+          description: The RDF resource URI of the members state organisation.
+        name:
+          type: string
+          description: The members state organisation name.
+          minLength: 1
+          maxLength: 255
+        organisation_type:
+          type: string
+          description: The member state organisation type.
+          enum:
+            - local_public_sector_body
+            - national_public_sector_body
+            - regional_public_sector_body
+        country:
+          $ref: '#/components/schemas/EuropeanUnionCountry'
+          description: The member state organisation country.
+
+    BindingRequirement:
+      type: object
+      required:
+        - expression
+        - description
+        - affects
+      additionalProperties: false
+      properties:
+        expression:
+          type: array
+          uniqueItems: true
+          minItems: 1
+          description: |-
+            One ore multiple objects can be submitted, each following the
+            `Expression` schema.
+          items:
+            $ref: '#/components/schemas/Expression'
+        description:
+          type: string
+          description: The binding requirement short description.
+          minLength: 1
+        documented_in:
+          type: string
+          format: uri
+          description: The binding requirement url.
+        documents:
+          type: array
+          uniqueItems: true
+          description: |-
+            List of URLs of documents supporting this binding requirement.
+          items:
+            type: string
+            format: uri
+        affects:
+          type: array
+          uniqueItems: true
+          description: |-
+            One ore multiple objects can be submitted, each following the
+            `PublicService` schema.
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/PublicService'
+        has_participation:
+          type: array
+          uniqueItems: true
+          description: |-
+            One ore multiple objects can be submitted, each following the
+            `Participation` schema.
+          items:
+            $ref: '#/components/schemas/Participation'
+        asset:
+          type: array
+          uniqueItems: true
+          description: |-
+            One ore multiple items can be submitted. Each item is:
+            - EITHER an object following the `Asset` schema. In this case a new
+              asset will be created along with the assessment report,
+            - OR, an existing interoperability solution ID. To find out which
+              are all existing interoperability solutions (assets), use the
+              `/asset` GET resource, documented in this page.
+          items:
+            oneOf:
+              - $ref: '#/components/schemas/Asset'
+              - $ref: '#/components/schemas/UUID'
+          example:
+            asset:
+              - b40f14cf-7383-40d6-aa07-16be9b3ff930
+              - title: Agriculture Digital System
+                description: The New Agriculture Revolution.
+                url: http://example.com/digital-revolution
+
+    Expression:
+      type: object
+      required:
+        - name
+        - description
+      additionalProperties: false
+      properties:
+        name:
+          type: string
+          description: The name of the initiative.
+          minLength: 1
+          maxLength: 255
+        description:
+          type: string
+          description: The description of the initiative.
+          minLength: 1
+        documented_in:
+          type: string
+          format: uri
+          description: The webpage describing this initiative.
+
+    PublicService:
+      type: object
+      required:
+        - name
+      additionalProperties: false
+      properties:
+        name:
+          type: string
+          description: The name of the public service.
+          minLength: 1
+          maxLength: 255
+        thematic_area:
+          type: array
+          uniqueItems: true
+          description: |-
+            The concerned function of trans-European digital public service(s).
+          items:
+            type: string
+            enum:
+              - general_public_services
+              - defence
+              - public_order_and_safety
+              - economic_affairs
+              - environmental_protection
+              - housing_and_community_amenities
+              - health
+              - recreation_culture_and_religion
+              - education
+              - social_protection
+        country:
+          type: array
+          uniqueItems: true
+          description: |-
+            The concerned country(s) of trans-European digital public
+            service(s).
+          items:
+            $ref: '#/components/schemas/EuropeanUnionCountry'
+
+    Participation:
+      type: object
+      required:
+        - participant_type
+      additionalProperties: false
+      properties:
+        participant_type:
+          type: array
+          uniqueItems: true
+          items:
+            type: string
+            description: The type of the affected stakeholder.
+            enum:
+              - european_union_agency
+              - european_union_body
+              - european_union_institution
+              - local_public_sector_body
+              - national_public_sector_body
+              - private_businesses
+              - regional_public_sector_body
+          description: The participation type.
+        country:
+          description: |-
+            Stakeholder's countries. Each as ISO-3166 2-letter country code or
+            "EU" for EU-wide entities.
+          oneOf:
+            - type: array
+              uniqueItems: true
+              items:
+                type: string
+                enum: [EU]
+              minItems: 1
+              maxItems: 1
+            - type: array
+              uniqueItems: true
+              items:
+                $ref: '#/components/schemas/EuropeanUnionCountry'
+
+    Asset:
+      type: object
+      required:
+        - title
+        - description
+        - landing_page
+      description: An asset as interoperability solution.
+      properties:
+        id:
+          schema:
+            $ref: '#/components/schemas/UUID'
+          readOnly: true
+          description: The universally unique ID of the solution.
+        uri:
+          type: string
+          format: uri
+          readOnly: true
+          description: The canonical URI of the asset
+        title:
+          type: string
+          description: The title of the interoperability solution.
+          minLength: 1
+          maxLength: 255
+        description:
+          type: string
+          description: The interoperability solution description.
+          minLength: 1
+        landing_page:
+          type: string
+          description: The interoperability solution relevant website.
+          format: uri
+        url:
+          type: string
+          description: The solution page on the Interoperable Europe Portal.
+          format: uri
+
+    Statement:
+      type: object
+      required:
+        - interpretation
+      additionalProperties: false
+      properties:
+        interpretation:
+          type: string
+          description: The interpretation of the statement.
+          enum:
+            - negative
+            - neutral
+            - positive
+        judgement:
+          type: string
+          description: The personal opinion on the report.
+
+    # Pagination wrapper schemas
+
+    Pager:
+      type: object
+      description: Pagination metadata returned with list responses.
+      properties:
+        current_page:
+          type: integer
+          description: The zero-based current page number.
+        items_per_page:
+          type: integer
+          description: The number of items displayed per page (200).
+        total_items:
+          type: integer
+          description: The total number of items in the result set.
+        total_pages:
+          type: integer
+          description: The total number of pages.
+
+    PaginatedReportList:
+      type: object
+      description: Paginated list of assessment reports.
+      properties:
+        rows:
+          type: array
+          uniqueItems: true
+          description: The list of reports for the current page.
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                description: The report UUID.
+              uri:
+                type: string
+                format: uri
+                description: The canonical URI of the report.
+              name:
+                type: string
+                description: The report name.
+              country:
+                type: string
+                nullable: true
+                description: The provider's country code (ISO-3166 alpha-2).
+        pager:
+          $ref: '#/components/schemas/Pager'
+
+    PaginatedOrganisationList:
+      type: object
+      description: Paginated list of public organisations.
+      properties:
+        rows:
+          type: array
+          uniqueItems: true
+          description: The list of organisations for the current page.
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                description: The organisation UUID.
+              uri:
+                type: string
+                format: uri
+                description: The canonical URI of the organisation.
+              name:
+                type: string
+                description: The organisation name.
+              organisation_type:
+                type: string
+                description: The organisation type identifier.
+              country:
+                type: string
+                nullable: true
+                description: The country code (ISO-3166 alpha-2).
+        pager:
+          $ref: '#/components/schemas/Pager'
+
+    PaginatedAssetList:
+      type: object
+      description: Paginated list of assets (interoperability solutions).
+      properties:
+        rows:
+          type: array
+          uniqueItems: true
+          description: The list of assets for the current page.
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                description: The asset UUID.
+              uri:
+                type: string
+                format: uri
+                description: The canonical URI of the asset.
+              title:
+                type: string
+                description: The asset title.
+              url:
+                type: string
+                format: uri
+                description: The URL to the asset page on the portal.
+        pager:
+          $ref: '#/components/schemas/Pager'
+
+    # Generic reusable types
+
+    EuropeanUnionCountry:
+      type: string
+      nullable: true
+      description: ISO-3166 alpha-2 country code
+      enum:
+        - AT  # Austria
+        - BE  # Belgium
+        - BG  # Bulgaria
+        - HR  # Croatia
+        - CY  # Cyprus
+        - CZ  # Czechia
+        - DK  # Denmark
+        - EE  # Estonia
+        - FI  # Finland
+        - FR  # France
+        - DE  # Germany
+        - GR  # Greece
+        - HU  # Hungary
+        - IE  # Ireland
+        - IT  # Italy
+        - LV  # Latvia
+        - LT  # Lithuania
+        - LU  # Luxembourg
+        - MT  # Malta
+        - NL  # Netherlands
+        - PL  # Poland
+        - PT  # Portugal
+        - RO  # Romania
+        - SK  # Slovakia
+        - SI  # Slovenia
+        - ES  # Spain
+        - SE  # Sweden
+
+    EuropeanUnionLanguage:
+      type: string
+      enum:
+        - bg  # Bulgarian
+        - cs  # Czech
+        - da  # Danish
+        - de  # German
+        - el  # Greek
+        - en  # English
+        - es  # Spanish
+        - et  # Estonian
+        - fi  # Finnish
+        - fr  # French
+        - ga  # Irish
+        - hr  # Croatian
+        - hu  # Hungarian
+        - it  # Italian
+        - lt  # Lithuanian
+        - lv  # Latvian
+        - mt  # Maltese
+        - nl  # Dutch
+        - pl  # Polish
+        - pt  # Portuguese
+        - ro  # Romanian
+        - sk  # Slovak
+        - sl  # Slovenian
+        - sv  # Swedish
+
+    UUID:
+      type: string
+      pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'

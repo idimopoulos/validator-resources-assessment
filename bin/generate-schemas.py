@@ -84,9 +84,13 @@ def build(spec_path: Path) -> dict[str, str]:
             f"schemas/{name}.schema.json" if is_root
             else f"schemas/common/{name}.schema.json"
         )
+        # No `$id` is emitted. References between these files are relative paths that
+        # the validator resolves against each file's own location, which is also how
+        # the Test Bed loads `validator.referencedSchemas`. A bare-filename `$id` would
+        # declare a base URI that disagrees with where the file actually sits, and
+        # resolvers are inconsistent about which of the two wins.
         body = {
             "$schema": DIALECT,
-            "$id": f"{name}.schema.json",
             **rewrite_refs(schema, from_common=not is_root),
         }
         files[relative] = json.dumps(body, indent=2, ensure_ascii=False) + "\n"

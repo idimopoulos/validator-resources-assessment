@@ -1,6 +1,5 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "Assessment-submit.overlay.json",
   "title": "Submission-only constraints",
   "description": "The Assessment schema describes both the body posted to /assessment and the body returned by it. `id` and `uri` are assigned by the server, and are marked `readOnly` in the OpenAPI spec — but `readOnly` is an annotation in JSON Schema, not an assertion, so no validator rejects them on input. This overlay is combined with the base schema using allOf for the `submit` validation type to make them illegal on submission. It declares no properties of its own, so it does not interact with the base schema's `additionalProperties: false`.",
   "not": {

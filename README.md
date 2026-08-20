@@ -31,7 +31,14 @@ resources/assessment/
 └── tests/
     ├── valid/                              payloads that must validate
     └── invalid/                            payloads that must not
+
+bin/generate-schemas.py                     derives schemas/ from the specification
+bin/run-tests.py                            runs tests/ through config.properties
+spec/assessments.openapi.yaml               vendored copy of the source spec
 ```
+
+Everything under `resources/assessment/` is what the Test Bed consumes. The rest exists
+to keep it honest.
 
 ## The schemas are generated, not written
 
@@ -44,23 +51,63 @@ This is possible because the spec is **OpenAPI 3.1.1**, and OpenAPI 3.1 schema o
 `components/schemas` into one file each, and rewrite `#/components/schemas/X` pointers
 into relative file references.
 
+A copy of the spec is vendored at `spec/assessments.openapi.yaml` so that this works — and
+so that CI works — without credentials for EC GitLab. See `spec/README.md` for its
+provenance and for what that copy does and does not guarantee.
+
 ```bash
-bin/generate-schemas.py --spec ../joinup/web/modules/custom/assessments/openapi/assessments.openapi.yaml
+pip install -r requirements.txt
+bin/generate-schemas.py --spec spec/assessments.openapi.yaml
 ```
 
 To verify the committed files still match the spec without writing anything:
 
 ```bash
-bin/generate-schemas.py --spec <path> --check
+bin/generate-schemas.py --spec spec/assessments.openapi.yaml --check
 ```
 
-`--check` exits non-zero on any missing, outdated or orphaned schema. It is the form CI
-runs, and it is the only thing standing between a field rename in Joinup and a public
-validator that quietly disagrees with the API.
+`--check` exits non-zero on any missing, outdated or orphaned schema. It is the only thing
+standing between a field rename in Joinup and a public validator that quietly disagrees
+with the API.
 
 The script needs Python 3.9+ and PyYAML, nothing else. It deliberately does not reuse
 Joinup's `devizzent/cebe-php-openapi`, so this repository stays independent of a PHP
 toolchain.
+
+## Tests
+
+```bash
+bin/run-tests.py
+```
+
+Payloads in `tests/valid/` must validate and payloads in `tests/invalid/` must not. A
+file is routed to a validation type by its filename prefix, so `submit-missing-name.json`
+is checked against `submit`; a payload whose type is not enabled is skipped rather than
+failed.
+
+The runner assembles each type's schema by reading `config.properties` — including
+`combinationApproach` — rather than hardcoding it, so it exercises the configuration the
+Test Bed will actually load instead of a restatement of it. Change the configuration
+wrongly and the tests notice.
+
+The valid payloads are the specification's own `examples`, not invented ones. The invalid
+ones are each derived from a valid payload with a single mutation, so a failure points at
+one rule.
+
+## CI
+
+`.github/workflows/ci.yml` runs both of the above on every push and pull request.
+
+This is a **self-contained** check: it verifies the schemas against the vendored copy of
+the spec. It catches hand-edited schemas and a spec refresh without a regeneration. It
+cannot see Joinup changing the upstream spec — that drift stays invisible until somebody
+refreshes `spec/`.
+
+Closing that gap needs CI that reads the spec from GitLab, either pushed from Joinup's own
+pipeline when the spec changes, or pulled here on a schedule to open a pull request. Both
+need a cross-organisation credential, which is why neither is set up yet. Given that ITB's
+webhook redeploys the validator on push, the pull-and-review shape is the safer of the two:
+a human sees each schema change before Member States do.
 
 ## Validation types
 
