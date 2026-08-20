@@ -1,5 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://interoperable-europe.ec.europa.eu/schemas/assessment/PublicService.schema.json",
   "type": "object",
   "required": [
     "name"
@@ -37,7 +38,7 @@
       "uniqueItems": true,
       "description": "The concerned country(s) of trans-European digital public\nservice(s).",
       "items": {
-        "$ref": "EuropeanUnionCountry.schema.json"
+        "$ref": "https://interoperable-europe.ec.europa.eu/schemas/assessment/EuropeanUnionCountry.schema.json"
       }
     }
   }

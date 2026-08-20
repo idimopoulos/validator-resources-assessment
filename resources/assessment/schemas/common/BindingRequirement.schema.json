@@ -1,5 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://interoperable-europe.ec.europa.eu/schemas/assessment/BindingRequirement.schema.json",
   "type": "object",
   "required": [
     "expression",
@@ -14,7 +15,7 @@
       "minItems": 1,
       "description": "One ore multiple objects can be submitted, each following the\n`Expression` schema.",
       "items": {
-        "$ref": "Expression.schema.json"
+        "$ref": "https://interoperable-europe.ec.europa.eu/schemas/assessment/Expression.schema.json"
       }
     },
     "description": {
@@ -42,7 +43,7 @@
       "description": "One ore multiple objects can be submitted, each following the\n`PublicService` schema.",
       "minItems": 1,
       "items": {
-        "$ref": "PublicService.schema.json"
+        "$ref": "https://interoperable-europe.ec.europa.eu/schemas/assessment/PublicService.schema.json"
       }
     },
     "has_participation": {
@@ -50,7 +51,7 @@
       "uniqueItems": true,
       "description": "One ore multiple objects can be submitted, each following the\n`Participation` schema.",
       "items": {
-        "$ref": "Participation.schema.json"
+        "$ref": "https://interoperable-europe.ec.europa.eu/schemas/assessment/Participation.schema.json"
       }
     },
     "asset": {
@@ -60,10 +61,10 @@
       "items": {
         "oneOf": [
           {
-            "$ref": "Asset.schema.json"
+            "$ref": "https://interoperable-europe.ec.europa.eu/schemas/assessment/Asset.schema.json"
           },
           {
-            "$ref": "UUID.schema.json"
+            "$ref": "https://interoperable-europe.ec.europa.eu/schemas/assessment/UUID.schema.json"
           }
         ]
       },

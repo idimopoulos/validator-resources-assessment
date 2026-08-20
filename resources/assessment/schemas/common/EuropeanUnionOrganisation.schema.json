@@ -1,5 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://interoperable-europe.ec.europa.eu/schemas/assessment/EuropeanUnionOrganisation.schema.json",
   "type": "object",
   "description": "An European Union organisation such as an institution, agency or body.",
   "required": [
@@ -10,7 +11,7 @@
   "properties": {
     "id": {
       "schema": {
-        "$ref": "UUID.schema.json"
+        "$ref": "https://interoperable-europe.ec.europa.eu/schemas/assessment/UUID.schema.json"
       },
       "readOnly": true,
       "description": "The ID of the European Union organisation."

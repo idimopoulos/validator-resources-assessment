@@ -1,5 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://interoperable-europe.ec.europa.eu/schemas/assessment/Participation.schema.json",
   "type": "object",
   "required": [
     "participant_type"
@@ -43,7 +44,7 @@
           "type": "array",
           "uniqueItems": true,
           "items": {
-            "$ref": "EuropeanUnionCountry.schema.json"
+            "$ref": "https://interoperable-europe.ec.europa.eu/schemas/assessment/EuropeanUnionCountry.schema.json"
           }
         }
       ]

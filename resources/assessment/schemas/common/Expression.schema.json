@@ -1,5 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://interoperable-europe.ec.europa.eu/schemas/assessment/Expression.schema.json",
   "type": "object",
   "required": [
     "name",

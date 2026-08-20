@@ -1,5 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://interoperable-europe.ec.europa.eu/schemas/assessment/PaginatedOrganisationList.schema.json",
   "type": "object",
   "description": "Paginated list of public organisations.",
   "properties": {
@@ -36,7 +37,7 @@
       }
     },
     "pager": {
-      "$ref": "Pager.schema.json"
+      "$ref": "https://interoperable-europe.ec.europa.eu/schemas/assessment/Pager.schema.json"
     }
   }
 }

@@ -33,6 +33,15 @@ DIALECT = "https://json-schema.org/draft/2020-12/schema"
 
 REF_PREFIX = "#/components/schemas/"
 
+# Base URI for the `$id` of every generated schema.
+#
+# The Test Bed validator registers shared schemas by their `$id` and resolves `$ref`
+# as a URI, so each schema needs a stable absolute identifier and references must use
+# it. These URIs are identifiers, not locations — the validator maps them to the local
+# files listed in `validator.referencedSchemas` and never dereferences them over the
+# network.
+DEFAULT_BASE_URI = "https://interoperable-europe.ec.europa.eu/schemas/assessment/"
+
 # OpenAPI-only keywords that carry no meaning for a standalone JSON Schema
 # validator. They are dropped so the published schemas stay readable; JSON Schema
 # would ignore them, but leaving them in invites the reader to think they do
@@ -40,11 +49,18 @@ REF_PREFIX = "#/components/schemas/"
 OPENAPI_ONLY_KEYWORDS = frozenset({"discriminator", "xml", "externalDocs"})
 
 
-def rewrite_refs(node, from_common: bool):
-    """Rewrites `#/components/schemas/X` pointers into file references.
+def schema_id(base_uri: str, name: str) -> str:
+    """The `$id` a generated schema is published under."""
+    return f"{base_uri}{name}.schema.json"
 
-    The root schema sits one directory above the rest, so the path it needs to
-    reach a referenced schema differs from the path its siblings need.
+
+def rewrite_refs(node, base_uri: str):
+    """Rewrites `#/components/schemas/X` pointers into absolute `$id` references.
+
+    Absolute rather than relative on purpose: the Test Bed resolves `$ref` as a URI,
+    and a relative path is not one — it raises `IllegalArgumentException` from
+    `URLReader` before validation begins. Using the `$id` also makes the reference
+    independent of where the file happens to sit on disk.
     """
     if isinstance(node, dict):
         out = {}
@@ -52,20 +68,16 @@ def rewrite_refs(node, from_common: bool):
             if key in OPENAPI_ONLY_KEYWORDS:
                 continue
             if key == "$ref" and isinstance(value, str) and value.startswith(REF_PREFIX):
-                target = value[len(REF_PREFIX):]
-                if from_common:
-                    out[key] = f"{target}.schema.json"
-                else:
-                    out[key] = f"common/{target}.schema.json"
+                out[key] = schema_id(base_uri, value[len(REF_PREFIX):])
             else:
-                out[key] = rewrite_refs(value, from_common)
+                out[key] = rewrite_refs(value, base_uri)
         return out
     if isinstance(node, list):
-        return [rewrite_refs(item, from_common) for item in node]
+        return [rewrite_refs(item, base_uri) for item in node]
     return node
 
 
-def build(spec_path: Path) -> dict[str, str]:
+def build(spec_path: Path, base_uri: str) -> dict[str, str]:
     """Returns a mapping of output path (relative to the domain dir) to file body."""
     spec = yaml.safe_load(spec_path.read_text(encoding="utf-8"))
 
@@ -84,14 +96,10 @@ def build(spec_path: Path) -> dict[str, str]:
             f"schemas/{name}.schema.json" if is_root
             else f"schemas/common/{name}.schema.json"
         )
-        # No `$id` is emitted. References between these files are relative paths that
-        # the validator resolves against each file's own location, which is also how
-        # the Test Bed loads `validator.referencedSchemas`. A bare-filename `$id` would
-        # declare a base URI that disagrees with where the file actually sits, and
-        # resolvers are inconsistent about which of the two wins.
         body = {
             "$schema": DIALECT,
-            **rewrite_refs(schema, from_common=not is_root),
+            "$id": schema_id(base_uri, name),
+            **rewrite_refs(schema, base_uri),
         }
         files[relative] = json.dumps(body, indent=2, ensure_ascii=False) + "\n"
 
@@ -113,6 +121,11 @@ def main() -> int:
         help="the validator domain directory to write into",
     )
     parser.add_argument(
+        "--base-uri",
+        default=DEFAULT_BASE_URI,
+        help=f"base URI for generated $id values (default: {DEFAULT_BASE_URI})",
+    )
+    parser.add_argument(
         "--check",
         action="store_true",
         help="verify the committed schemas match the spec instead of writing them",
@@ -122,7 +135,7 @@ def main() -> int:
     if not args.spec.is_file():
         sys.exit(f"error: spec not found: {args.spec}")
 
-    files = build(args.spec)
+    files = build(args.spec, args.base_uri)
 
     if args.check:
         stale = []

@@ -68,15 +68,16 @@ def make_validator(domain: Path, schema: dict):
     """
     base = (domain / "schemas").resolve()
 
-    # Keyed by absolute file: URI, not by relative path. RefResolver.push_scope joins
-    # the scope it is handed against the current scope, and that scope has already been
-    # resolved — with relative keys the join is not idempotent and each hop re-prefixes
-    # the directory, turning common/X into common/common/X. Absolute URIs join cleanly.
+    # Keyed by each schema's own `$id`, which is what its references use. This mirrors
+    # how the Test Bed registers the files named in `validator.referencedSchemas`: it
+    # reads their `$id` and resolves `$ref` against that, never against the file path.
     store = {}
     for path in base.rglob("*.json"):
         contents = json.loads(path.read_text(encoding="utf-8"))
+        identifier = contents.get("$id")
+        if identifier:
+            store[identifier] = contents
         store[path.as_uri()] = contents
-        store[path.relative_to(base).as_posix()] = contents
 
     base_uri = base.as_uri() + "/"
     validator_cls = jsonschema.validators.validator_for(schema)

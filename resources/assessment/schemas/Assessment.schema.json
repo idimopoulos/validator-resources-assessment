@@ -1,5 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://interoperable-europe.ec.europa.eu/schemas/assessment/Assessment.schema.json",
   "type": "object",
   "description": "European Union Interoperability Act assessment report.",
   "required": [
@@ -11,7 +12,7 @@
   "properties": {
     "id": {
       "schema": {
-        "$ref": "common/UUID.schema.json"
+        "$ref": "https://interoperable-europe.ec.europa.eu/schemas/assessment/UUID.schema.json"
       },
       "readOnly": true,
       "description": "The universally unique ID of the assessment report"
@@ -32,10 +33,10 @@
       "description": "A public organisation. For an existing organisationm pass its ID. To\ncreate a new organisation pass a `MemberStateOrganisation` object.\nIt's not possible to to create a new European Union organisation,\nyou should always pass an ID to refer one. To find out which are all\nexisting organisations, use the `/organisation` GET resource,\ndocumented in this page.",
       "oneOf": [
         {
-          "$ref": "common/MemberStateOrganisation.schema.json"
+          "$ref": "https://interoperable-europe.ec.europa.eu/schemas/assessment/MemberStateOrganisation.schema.json"
         },
         {
-          "$ref": "common/UUID.schema.json"
+          "$ref": "https://interoperable-europe.ec.europa.eu/schemas/assessment/UUID.schema.json"
         }
       ]
     },
@@ -54,7 +55,7 @@
       "uniqueItems": true,
       "minItems": 1,
       "items": {
-        "$ref": "common/BindingRequirement.schema.json"
+        "$ref": "https://interoperable-europe.ec.europa.eu/schemas/assessment/BindingRequirement.schema.json"
       }
     },
     "results_in": {
@@ -62,16 +63,16 @@
       "description": "Identified effects on cross-border interoperability from different\nperspectives: legal, organisational, semantic, and technical.",
       "properties": {
         "legal": {
-          "$ref": "common/Statement.schema.json"
+          "$ref": "https://interoperable-europe.ec.europa.eu/schemas/assessment/Statement.schema.json"
         },
         "organisational": {
-          "$ref": "common/Statement.schema.json"
+          "$ref": "https://interoperable-europe.ec.europa.eu/schemas/assessment/Statement.schema.json"
         },
         "semantic": {
-          "$ref": "common/Statement.schema.json"
+          "$ref": "https://interoperable-europe.ec.europa.eu/schemas/assessment/Statement.schema.json"
         },
         "technical": {
-          "$ref": "common/Statement.schema.json"
+          "$ref": "https://interoperable-europe.ec.europa.eu/schemas/assessment/Statement.schema.json"
         }
       }
     },

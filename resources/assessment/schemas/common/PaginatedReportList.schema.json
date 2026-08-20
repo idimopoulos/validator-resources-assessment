@@ -1,5 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://interoperable-europe.ec.europa.eu/schemas/assessment/PaginatedReportList.schema.json",
   "type": "object",
   "description": "Paginated list of assessment reports.",
   "properties": {
@@ -32,7 +33,7 @@
       }
     },
     "pager": {
-      "$ref": "Pager.schema.json"
+      "$ref": "https://interoperable-europe.ec.europa.eu/schemas/assessment/Pager.schema.json"
     }
   }
 }

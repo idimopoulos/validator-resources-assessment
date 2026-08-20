@@ -1,5 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://interoperable-europe.ec.europa.eu/schemas/assessment/Asset.schema.json",
   "type": "object",
   "required": [
     "title",
@@ -10,7 +11,7 @@
   "properties": {
     "id": {
       "schema": {
-        "$ref": "UUID.schema.json"
+        "$ref": "https://interoperable-europe.ec.europa.eu/schemas/assessment/UUID.schema.json"
       },
       "readOnly": true,
       "description": "The universally unique ID of the solution."

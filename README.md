@@ -49,7 +49,7 @@ repository.
 This is possible because the spec is **OpenAPI 3.1.1**, and OpenAPI 3.1 schema objects
 *are* JSON Schema 2020-12. The conversion is therefore mechanical: split
 `components/schemas` into one file each, and rewrite `#/components/schemas/X` pointers
-into relative file references.
+into the absolute `$id` URIs described below.
 
 A copy of the spec is vendored at `spec/assessments.openapi.yaml` so that this works — and
 so that CI works — without credentials for EC GitLab. See `spec/README.md` for its
@@ -93,6 +93,54 @@ wrongly and the tests notice.
 The valid payloads are the specification's own `examples`, not invented ones. The invalid
 ones are each derived from a valid payload with a single mutation, so a failure points at
 one rule.
+
+## Running the validator locally
+
+This is step one of what ITB asked for, and the only way to be sure the configuration is
+right — the schemas can be perfectly valid JSON Schema and still not load.
+
+```bash
+docker run -d --name assessment-validator -p 8899:8080 \
+  -v "$PWD/resources":/validator/resources/ \
+  -e validator.resourceRoot=/validator/resources/ \
+  isaitb/json-validator
+```
+
+Web form: <http://localhost:8899/json/assessment/upload>
+
+REST, with the content base64-encoded:
+
+```bash
+curl -s -X POST http://localhost:8899/json/assessment/api/validate \
+  -H 'Content-Type: application/json' -H 'Accept: application/json' \
+  -d "{\"contentToValidate\":\"$(base64 -w0 resources/assessment/tests/valid/submit-create-or-refer-sub-objects.json)\",
+       \"embeddingMethod\":\"BASE64\",\"validationType\":\"submit\",\"locationAsPointer\":true}"
+```
+
+Without `Accept: application/json` the response is a GITB TAR report in XML, which is the
+default and is not an error.
+
+Check the startup log for `Preloaded 15 shared schema(s)`. A line reading
+`Unable to read schema ID from file configured as shared schema` means a referenced schema
+is missing its `$id` and will not resolve.
+
+## Why the schemas carry absolute `$id`s
+
+The Test Bed registers each file in `validator.referencedSchemas` under its `$id`, and
+resolves every `$ref` as a **URI**. A relative path such as `common/UUID.schema.json` is
+not a URI: `LocalSchemaResolver` hands it to `URLReader`, which rejects it, and the request
+fails with *"An unexpected error was raised during validation"* before any validation runs.
+
+So each schema declares an absolute `$id` under
+
+```
+https://interoperable-europe.ec.europa.eu/schemas/assessment/
+```
+
+and references use those URIs. They are **identifiers, not locations** — the validator maps
+them to the local files and never fetches anything over the network. Change the base with
+`--base-uri` if a different namespace is agreed; it is a published identifier, so it is
+worth agreeing before the validator goes live rather than after.
 
 ## CI
 
@@ -148,9 +196,9 @@ burden, not a feature.
    reproduced here — the generator derives, it does not correct.
 
 3. **Dialect gap.** The spec is 2020-12, but Joinup validates with
-   `justinrainbow/json-schema` 6.10.0, which implements draft-04/06/07. The Test Bed
-   validator does support 2020-12. On any 2020-12-only keyword this validator will be
-   stricter than the API.
+   `justinrainbow/json-schema` 6.10.0, which implements draft-04/06/07. The Test Bed runs
+   `networknt/json-schema-validator`, which does support 2020-12. On any 2020-12-only
+   keyword this validator will be stricter than the API.
 
 ## Publishing
 
