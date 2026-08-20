@@ -188,12 +188,23 @@ first evaluation needs. It is in the history at `4827e93` if it is wanted back.
 Recorded here because a validator that differs from the endpoint it fronts is a support
 burden, not a feature.
 
-1. **`language` is undeclared.** Responses always include it; submissions are read for it
-   (`$this->langcode = $data['language'] ?? 'en'`) but can never supply it, because schema
-   validation runs first and `additionalProperties: false` rejects it. That fallback is
-   effectively dead code. Confirmed against the real validator, which reports
+1. **`language` was removed from the input side only.** ISAICP-11003 (`32a49ff`, 10 March
+   2026) deleted the property from the `Assessment` schema and from the request example,
+   deliberately: reports are English-only for now, `createReport()` hardcodes the default
+   via `$data['language'] ?? 'en'`, and a sibling commit added test coverage for the
+   property being *prohibited* on submission. That part is intentional, not a bug.
+
+   What was missed is the response side. `reportToArray()` still emits
+   `'language' => $report->language()->getId()` unconditionally, and the `201` example was
+   edited (`"it"` → `"en"`) rather than removed. So the specification's own response
+   example does not satisfy the specification's own schema, and neither does any real
+   response. Confirmed against the Test Bed validator, which reports
    `Property 'language' not defined in the schema and additional properties are not
-   allowed.` for the spec's own response example.
+   allowed.`
+
+   Resolving it is a choice between re-declaring `language` as `readOnly`, or dropping it
+   from `reportToArray()` and the example. Until then, this validator rejects genuine API
+   output.
 
 2. **`id` is unconstrained.** In `Assessment`, `EuropeanUnionOrganisation`,
    `MemberStateOrganisation` and `Asset` the property is written as `id:` → `schema:` →
