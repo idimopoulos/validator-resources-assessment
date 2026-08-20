@@ -26,7 +26,6 @@ resources/assessment/
 ├── config.properties                       Test Bed validator configuration
 ├── schemas/
 │   ├── Assessment.schema.json              root schema           (generated)
-│   ├── Assessment-submit.overlay.json      submission-only rules (hand-written)
 │   └── common/                             15 referenced schemas (generated)
 └── tests/
     ├── valid/                              payloads that must validate
@@ -42,7 +41,7 @@ to keep it honest.
 
 ## The schemas are generated, not written
 
-`bin/generate-schemas.py` derives every file under `schemas/` (except the overlay) from
+`bin/generate-schemas.py` derives every file under `schemas/` from
 `web/modules/custom/assessments/openapi/assessments.openapi.yaml` in the Joinup
 repository.
 
@@ -81,8 +80,8 @@ bin/run-tests.py
 ```
 
 Payloads in `tests/valid/` must validate and payloads in `tests/invalid/` must not. A
-file is routed to a validation type by its filename prefix, so `submit-missing-name.json`
-is checked against `submit`; a payload whose type is not enabled is skipped rather than
+file is routed to a validation type by its filename prefix, so `report-missing-name.json`
+is checked against `report`; a payload whose type is not enabled is skipped rather than
 failed.
 
 The runner assembles each type's schema by reading `config.properties` — including
@@ -93,6 +92,11 @@ wrongly and the tests notice.
 The valid payloads are the specification's own `examples`, not invented ones. The invalid
 ones are each derived from a valid payload with a single mutation, so a failure points at
 one rule.
+
+`invalid/report-as-returned-by-the-api.json` is the exception, and is not a mutation: it is
+the spec's own `201` response example, unaltered. It sits in `invalid/` because it does not
+validate — that is the `language` defect below, encoded as a test. When the spec is fixed
+this test will start failing, which is the point: move it to `valid/` at that moment.
 
 ## Running the validator locally
 
@@ -113,8 +117,8 @@ REST, with the content base64-encoded:
 ```bash
 curl -s -X POST http://localhost:8899/json/assessment/api/validate \
   -H 'Content-Type: application/json' -H 'Accept: application/json' \
-  -d "{\"contentToValidate\":\"$(base64 -w0 resources/assessment/tests/valid/submit-create-or-refer-sub-objects.json)\",
-       \"embeddingMethod\":\"BASE64\",\"validationType\":\"submit\",\"locationAsPointer\":true}"
+  -d "{\"contentToValidate\":\"$(base64 -w0 resources/assessment/tests/valid/report-create-or-refer-sub-objects.json)\",
+       \"embeddingMethod\":\"BASE64\",\"validationType\":\"report\",\"locationAsPointer\":true}"
 ```
 
 Without `Accept: application/json` the response is a GITB TAR report in XML, which is the
@@ -159,24 +163,25 @@ a human sees each schema change before Member States do.
 
 ## Validation types
 
-| Type | Purpose | Schema |
-|---|---|---|
-| `submit` | A report being posted to `POST /assessment` | base `allOf` submission overlay |
-| `published` | A report as returned by the API | base only — **not enabled**, see below |
+One type, `report`, validating against the generated `Assessment` schema. Nothing is
+customised: no schema combination, no overlays, no message or report tuning. This is
+deliberately the plainest configuration the Test Bed accepts, so that what you see is the
+validator's own behaviour rather than ours.
 
-`submit` is the one that matters: it is what a Member State runs before integrating.
+`Assessment` describes **both** directions of the exchange — the body posted to
+`POST /assessment` and the body returned by it — so `report` currently accepts either. Two
+consequences worth knowing before reading a report:
 
-The overlay exists because `Assessment` describes both directions of the exchange. `id`
-and `uri` are server-assigned and marked `readOnly` in the spec, but `readOnly` is an
-annotation in JSON Schema and no validator enforces it — so without the overlay a payload
-supplying its own `id` would validate. Combining base and overlay with
-`combinationApproach = allOf` gets the distinction without forking the schema. The overlay
-declares no properties of its own, so it does not interfere with the base schema's
-`additionalProperties: false`.
+- A payload may legally carry `id` and `uri`, even though the server assigns them. They are
+  marked `readOnly` in the spec, but `readOnly` is an annotation in JSON Schema and no
+  validator enforces it.
+- A response payload fails, because responses carry `language` and the schema does not
+  declare it while setting `additionalProperties: false`. See the divergences below.
 
-`published` is generated but commented out in `config.properties`. Every real response
-currently fails it: `reportToArray()` always emits a `language` property, which the
-`Assessment` schema does not declare while setting `additionalProperties: false`.
+An earlier revision added a submission-only overlay that made `id` and `uri` illegal on
+input, combined with `combinationApproach = allOf`. It worked, but it changed the reported
+errors into ones the stock validator would never produce, which is the opposite of what a
+first evaluation needs. It is in the history at `4827e93` if it is wanted back.
 
 ## Known divergences from the API
 
@@ -186,8 +191,9 @@ burden, not a feature.
 1. **`language` is undeclared.** Responses always include it; submissions are read for it
    (`$this->langcode = $data['language'] ?? 'en'`) but can never supply it, because schema
    validation runs first and `additionalProperties: false` rejects it. That fallback is
-   effectively dead code, and the `published` type is unusable until the property is added
-   to the spec.
+   effectively dead code. Confirmed against the real validator, which reports
+   `Property 'language' not defined in the schema and additional properties are not
+   allowed.` for the spec's own response example.
 
 2. **`id` is unconstrained.** In `Assessment`, `EuropeanUnionOrganisation`,
    `MemberStateOrganisation` and `Asset` the property is written as `id:` → `schema:` →
